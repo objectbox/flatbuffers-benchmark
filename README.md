@@ -1,12 +1,24 @@
 # Flatbuffers performance comparison
 
-Resulting operations per second:
+Note: Reading a list from flatbuffers in Dart requires a copy, resulting in quite a poor performance,
+so we measure a separate run with and without doing so.
+To be fair/have the numbers for comparison, we do the same in Go, though it doesn't have ssuch a big difference there.
 
-| Operation   | Dart (official flat_buffers) | Dart (ObjectBox flat_buffers) | Go  |
-|-------------------|-------------------:|-------------------:|-------------------:|
-| write FlatBuffers |             12 640 |            420 234 |          6 949 270 |
-| read FlatBuffers  |          4 070 902 |          3 733 616 |          9 242 144 |
+Measured performance (operations per second)
 
+## Without byte lists
+
+| Operation         | Dart (official FB) | Dart (ObjectBox FB) | Go                 |
+|-------------------|-------------------:|--------------------:|-------------------:|
+| write FlatBuffers |             12 652 |             523 279 |          7 806 401 |
+| read FlatBuffers  |          8 197 200 |           8 303 290 |          9 920 634 |
+
+## With byte lists
+
+| Operation         | Dart (official FB) | Dart (ObjectBox FB) | Go                 |
+|-------------------|-------------------:|--------------------:|-------------------:|
+| write FlatBuffers |             12 178 |             451 709 |          7 032 348 |
+| read FlatBuffers  |          3 831 742 |           3 883 763 |          8 438 818 |
 
 ## Dart
 
@@ -15,12 +27,20 @@ The reported result is the average of the runtimes.
 
 ```shell
 $ pub run benchmark/flatbuffers_official.dart
-Builder(RunTime): 791.1043890865955 us.
-Reader(RunTime): 2.456457470758959 us.
+Measuring performance without byte list
+Builder(RunTime): 790.3518957345972 us.
+Reader(RunTime): 1.2199287561606402 us.
+Measuring performance with byte list
+Builder(RunTime): 821.0898645876077 us.
+Reader(RunTime): 2.6097788216872186 us.
 
 $ pub run benchmark/flatbuffers_objectbox.dart
-Builder(RunTime): 23.796221161968898 us.
-Reader(RunTime): 2.6783684467085562 us.
+Measuring performance without byte list
+Builder(RunTime): 19.110253298808512 us.
+Reader(RunTime): 1.2043418933940644 us.
+Measuring performance with byte list
+Builder(RunTime): 22.138108520953708 us.
+Reader(RunTime): 2.5748223695305974 us.
 ```
 
 ## Go
@@ -32,6 +52,8 @@ $ go test -bench .
 goos: linux
 goarch: amd64
 pkg: flatbuffers_go_benchmark
-BenchmarkBuilder-12       820893              1439 ns/op
-BenchmarkReader-12       1000000              1082 ns/op
+BenchmarkBuilderWithoutBytesList-12       928960              1281 ns/op
+BenchmarkReaderWithoutBytesList-12       1226929              1008 ns/op
+BenchmarkBuilderWithBytesList-12          819072              1422 ns/op
+BenchmarkReaderWithBytesList-12          1000000              1185 ns/op
 ```

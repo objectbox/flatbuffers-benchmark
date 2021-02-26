@@ -7,33 +7,56 @@ import (
 	"testing"
 )
 
-func BenchmarkBuilder(b *testing.B) {
+func BenchmarkBuilderWithoutBytesList(b *testing.B) {
 	var builder = flatbuffers.NewBuilder(256)
 	for i := 0; i < b.N; i++ {
 		// execute 10 times to get this benchmark closer to what dart benchmark_harness does
 		for j := 0; j < 10; j++ {
 			builder.Reset()
-			writeData(builder)
+			writeData(builder, false)
 		}
 	}
 }
 
-func BenchmarkReader(b *testing.B) {
+func BenchmarkReaderWithoutBytesList(b *testing.B) {
 	var builder = flatbuffers.NewBuilder(256)
-	var data = writeData(builder)
+	var data = writeData(builder, false)
 
 	for i := 0; i < b.N; i++ {
 		// execute 10 times to get this benchmark closer to what dart benchmark_harness does
 		for j := 0; j < 10; j++ {
-			readData(data)
+			readData(data, false)
+		}
+	}
+}
+
+func BenchmarkBuilderWithBytesList(b *testing.B) {
+	var builder = flatbuffers.NewBuilder(256)
+	for i := 0; i < b.N; i++ {
+		// execute 10 times to get this benchmark closer to what dart benchmark_harness does
+		for j := 0; j < 10; j++ {
+			builder.Reset()
+			writeData(builder, true)
+		}
+	}
+}
+
+func BenchmarkReaderWithBytesList(b *testing.B) {
+	var builder = flatbuffers.NewBuilder(256)
+	var data = writeData(builder, true)
+
+	for i := 0; i < b.N; i++ {
+		// execute 10 times to get this benchmark closer to what dart benchmark_harness does
+		for j := 0; j < 10; j++ {
+			readData(data, true)
 		}
 	}
 }
 
 func TestRoundtrip(t *testing.T) {
 	var builder = flatbuffers.NewBuilder(256)
-	var data = writeData(builder)
-	var read = readData(data)
+	var data = writeData(builder, true)
+	var read = readData(data, true)
 	assert.Equal(t, source.number, read.number)
 	assert.Equal(t, source.float, read.float)
 	assert.Equal(t, source.str, read.str)
@@ -54,7 +77,7 @@ var source = POD{
 	bytes:  []byte{1, 2, 3, 4, 5, 6},
 }
 
-func writeData(builder *flatbuffers.Builder) []byte {
+func writeData(builder *flatbuffers.Builder, withBytesList bool) []byte {
 	var strOffset = builder.CreateString(source.str)
 	var bytesOffset = builder.CreateByteVector(source.bytes)
 	builder.StartObject(4)
@@ -64,8 +87,10 @@ func writeData(builder *flatbuffers.Builder) []byte {
 	builder.Slot(1)
 	builder.PrependUOffsetT(strOffset)
 	builder.Slot(2)
-	builder.PrependUOffsetT(bytesOffset)
-	builder.Slot(3)
+	if withBytesList {
+		builder.PrependUOffsetT(bytesOffset)
+		builder.Slot(3)
+	}
 	builder.Finish(builder.EndObject())
 	return builder.FinishedBytes()
 }
@@ -74,7 +99,7 @@ func field(slot int) flatbuffers.VOffsetT {
 	return flatbuffers.VOffsetT(slot*2 + 4)
 }
 
-func readData(data []byte) *POD {
+func readData(data []byte, withBytesList bool) *POD {
 	var table = flatbuffers.Table{
 		Bytes: data,
 		Pos:   flatbuffers.GetUOffsetT(data),
@@ -86,8 +111,10 @@ func readData(data []byte) *POD {
 	if o := table.Offset(field(2)); o != 0 {
 		object.str = table.String(flatbuffers.UOffsetT(o) + table.Pos)
 	}
-	if o := table.Offset(field(3)); o != 0 {
-		object.bytes = table.ByteVector(flatbuffers.UOffsetT(o) + table.Pos)
+	if withBytesList {
+		if o := table.Offset(field(3)); o != 0 {
+			object.bytes = table.ByteVector(flatbuffers.UOffsetT(o) + table.Pos)
+		}
 	}
 	return object
 }

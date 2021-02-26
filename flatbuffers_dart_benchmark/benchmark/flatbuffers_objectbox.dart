@@ -5,11 +5,21 @@ import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:objectbox/flatbuffers/flat_buffers.dart' as fb;
 import 'package:objectbox/src/bindings/flatbuffers.dart' as obx;
 
+bool withBytesList;
+
 // Note: the benchmark_harness executes a 10-call timing loop repeatedly until
 // 2 seconds have elapsed; the reported result is the average of the runtimes.
 void main() {
+  withBytesList = true;
   ReaderBench.test();
 
+  print('Measuring performance without byte list');
+  withBytesList = false;
+  BuilderBench.main();
+  ReaderBench.main();
+
+  print('Measuring performance with byte list');
+  withBytesList = true;
   BuilderBench.main();
   ReaderBench.main();
 }
@@ -34,7 +44,7 @@ Uint8List writeData(fb.Builder builder) {
   builder.addInt64(0, source.number);
   builder.addFloat64(1, source.float);
   builder.addOffset(2, strOffset);
-  builder.addOffset(3, bytesOffset);
+  if (withBytesList) builder.addOffset(3, bytesOffset);
   return builder.finish(builder.endTable());
 }
 
@@ -81,9 +91,11 @@ class ReaderBench extends BenchmarkBase {
     assert(read.number == source.number);
     assert(read.float == source.float);
     assert(read.string == source.string);
-    assert(read.bytes.length == source.bytes.length);
-    for (var i = 0; i < read.bytes.length; i++) {
-      assert(read.bytes[i] == source.bytes[i]);
+    if (withBytesList) {
+      assert(read.bytes.length == source.bytes.length);
+      for (var i = 0; i < read.bytes.length; i++) {
+        assert(read.bytes[i] == source.bytes[i]);
+      }
     }
   }
 
@@ -99,9 +111,11 @@ class ReaderBench extends BenchmarkBase {
     object.number = fb.Int64Reader().vTableGet(buffer, rootOffset, field(0));
     object.float = fb.Float64Reader().vTableGet(buffer, rootOffset, field(1));
     object.string = fb.StringReader().vTableGet(buffer, rootOffset, field(2));
-    object.bytes = fb.ListReader<int>(fb.Int8Reader())
-        .vTableGet(buffer, rootOffset, field(3))
-        .toList();
+    if (withBytesList) {
+      object.bytes = fb.ListReader<int>(fb.Int8Reader())
+          .vTableGet(buffer, rootOffset, field(3))
+          .toList();
+    }
     return object;
   }
 
