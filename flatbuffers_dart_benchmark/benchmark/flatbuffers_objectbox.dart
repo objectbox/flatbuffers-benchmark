@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:benchmark_harness/benchmark_harness.dart';
 import 'package:objectbox/flatbuffers/flat_buffers.dart' as fb;
 import 'package:objectbox/src/bindings/flatbuffers.dart' as obx;
+import 'package:objectbox/src/fb_readers.dart' as obx;
 
 bool withBytesList;
 
@@ -112,9 +113,8 @@ class ReaderBench extends BenchmarkBase {
     object.float = fb.Float64Reader().vTableGet(buffer, rootOffset, field(1));
     object.string = fb.StringReader().vTableGet(buffer, rootOffset, field(2));
     if (withBytesList) {
-      object.bytes = fb.ListReader<int>(fb.Int8Reader())
-          .vTableGet(buffer, rootOffset, field(3))
-          .toList();
+      object.bytes = obx.EagerListReader<int>(fb.Int8Reader())
+          .vTableGet(buffer, rootOffset, field(3));
     }
     return object;
   }
