@@ -1,0 +1,119 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:benchmark_harness/benchmark_harness.dart';
+import 'package:objectbox/flatbuffers/flat_buffers.dart' as fb;
+import 'package:objectbox/src/bindings/flatbuffers.dart' as obx;
+
+// Note: the benchmark_harness executes a 10-call timing loop repeatedly until
+// 2 seconds have elapsed; the reported result is the average of the runtimes.
+void main() {
+  ReaderBench.test();
+
+  BuilderBench.main();
+  ReaderBench.main();
+}
+
+class POD {
+  int number;
+  double float;
+  String string;
+  List<int> bytes;
+
+  POD();
+
+  POD.initialized(this.number, this.float, this.string, this.bytes);
+}
+
+final source = POD.initialized(1, 4.2, 'Foo', [1, 2, 3, 4, 5, 6]);
+
+Uint8List writeData(fb.Builder builder) {
+  final strOffset = builder.writeString(source.string);
+  final bytesOffset = builder.writeListInt8(source.bytes);
+  builder.startTable();
+  builder.addInt64(0, source.number);
+  builder.addFloat64(1, source.float);
+  builder.addOffset(2, strOffset);
+  builder.addOffset(3, bytesOffset);
+  return builder.finish(builder.endTable());
+}
+
+class BuilderBench extends BenchmarkBase {
+  final builder = obx.BuilderWithCBuffer(initialSize: 256);
+
+  BuilderBench() : super('Builder');
+
+  static void main() => BuilderBench().report();
+
+  // The benchmark code.
+  @override
+  void run() {
+    builder.resetIfLarge();
+    writeData(builder.fbb);
+  }
+
+  // Not measured setup code executed prior to the benchmark runs.
+  @override
+  void setup() {}
+
+  // Not measures teardown code executed after the benchark runs.
+  @override
+  void teardown() {
+    builder.clear();
+  }
+}
+
+class ReaderBench extends BenchmarkBase {
+  final builder = obx.BuilderWithCBuffer(initialSize: 256);
+  Uint8List data;
+
+  ReaderBench() : super('Reader');
+
+  static void main() => ReaderBench().report();
+
+  /// Roundtrip test source->FB->read (== source)
+  static void test() {
+    final bench = ReaderBench();
+    bench.setup();
+    final read = bench.readData();
+    bench.teardown();
+
+    assert(read.number == source.number);
+    assert(read.float == source.float);
+    assert(read.string == source.string);
+    assert(read.bytes.length == source.bytes.length);
+    for (var i = 0; i < read.bytes.length; i++) {
+      assert(read.bytes[i] == source.bytes[i]);
+    }
+  }
+
+  // The benchmark code.
+  @override
+  void run() => readData();
+
+  POD readData() {
+    final buffer = fb.BufferContext.fromBytes(data);
+    final rootOffset = buffer.derefObject(0);
+
+    final object = POD();
+    object.number = fb.Int64Reader().vTableGet(buffer, rootOffset, field(0));
+    object.float = fb.Float64Reader().vTableGet(buffer, rootOffset, field(1));
+    object.string = fb.StringReader().vTableGet(buffer, rootOffset, field(2));
+    object.bytes = fb.ListReader<int>(fb.Int8Reader())
+        .vTableGet(buffer, rootOffset, field(3))
+        .toList();
+    return object;
+  }
+
+  // Not measured setup code executed prior to the benchmark runs.
+  @override
+  void setup() {
+    data = writeData(builder.fbb);
+  }
+
+  // Not measures teardown code executed after the benchark runs.
+  @override
+  void teardown() => builder.clear();
+
+  int field(int slot) => slot * 2 + 4;
+}
