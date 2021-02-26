@@ -37,7 +37,8 @@ final source = POD.initialized(1, 4.2, 'Foo', [1, 2, 3, 4, 5, 6]);
 
 Uint8List writeData(fb.Builder builder) {
   final strOffset = builder.writeString(source.string);
-  final bytesOffset = builder.writeListInt8(source.bytes);
+  int bytesOffset;
+  if (withBytesList) bytesOffset = builder.writeListInt8(source.bytes);
   builder.startTable();
   builder.addInt64(0, source.number);
   builder.addFloat64(1, source.float);

@@ -4,13 +4,13 @@ Note: Reading a list from flatbuffers in Dart requires a copy, resulting in quit
 so we measure a separate run with and without doing so.
 To be fair/have the numbers for comparison, we do the same in Go, though it doesn't have ssuch a big difference there.
 
-Measured performance (operations per second)
+Measured performance is in "operations per second".
 
 ## Without byte lists
 
 | Operation         | Dart (official FB) | Dart (ObjectBox FB) | Go                 |
 |-------------------|-------------------:|--------------------:|-------------------:|
-| write FlatBuffers |             12 652 |             523 279 |          7 806 401 |
+| write FlatBuffers |             13 060 |             677 673 |          7 806 401 |
 | read FlatBuffers  |          8 197 200 |           8 303 290 |          9 920 634 |
 
 ## With byte lists
@@ -28,7 +28,7 @@ The reported result is the average of the runtimes.
 ```shell
 $ pub run benchmark/flatbuffers_official.dart
 Measuring performance without byte list
-Builder(RunTime): 790.3518957345972 us.
+Builder(RunTime): 765.6720244929201 us.
 Reader(RunTime): 1.2199287561606402 us.
 Measuring performance with byte list
 Builder(RunTime): 821.0898645876077 us.
@@ -36,7 +36,7 @@ Reader(RunTime): 2.6097788216872186 us.
 
 $ pub run benchmark/flatbuffers_objectbox.dart
 Measuring performance without byte list
-Builder(RunTime): 19.110253298808512 us.
+Builder(RunTime): 14.75636513873826 us.
 Reader(RunTime): 1.2043418933940644 us.
 Measuring performance with byte list
 Builder(RunTime): 22.138108520953708 us.
