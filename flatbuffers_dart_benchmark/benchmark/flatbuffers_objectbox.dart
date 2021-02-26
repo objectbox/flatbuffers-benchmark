@@ -58,7 +58,7 @@ class BuilderBench extends BenchmarkBase {
   // The benchmark code.
   @override
   void run() {
-    builder.resetIfLarge();
+    builder.fbb.reset();
     writeData(builder.fbb);
   }
 
