@@ -4,7 +4,11 @@ Note: Reading a list from flatbuffers in Dart requires a copy, resulting in quit
 so we measure a separate run with and without doing so.
 To be fair/have the numbers for comparison, we do the same in Go, though it doesn't have such a big impact there.
 
-Measured performance is in "operations per second".
+## Setup
+
+* Measured performance is in "operations per second".
+* Benchmarks are CPU bound (no disk operations).
+* Executed on a laptop CPU: Intel Core i7-8850H
 
 ### Versions
 
