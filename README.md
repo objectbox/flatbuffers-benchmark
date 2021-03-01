@@ -17,17 +17,17 @@ Measured performance is in "operations per second".
 
 ## Without byte lists
 
-| Operation         | Dart (official FB v0.12) | Dart (official FB master) | Dart (ObjectBox FB) | Go                 |
-|-------------------|-------------------------:|--------------------------:|--------------------:|-------------------:|
-| write FlatBuffers |                   13 060 |                 3 284 045 |           3 319 266 |          7 806 401 |
-| read FlatBuffers  |                8 197 200 |                 8 878 415 |           9 118 250 |          9 920 634 |
+| Operation         | Dart (official FB v0.12) | Dart (official FB master) | Dart JIT (ObjectBox FB) | Dart AOT (ObjectBox FB) |                Go  |
+|-------------------|-------------------------:|--------------------------:|------------------------:|------------------------:|-------------------:|
+| write FlatBuffers |                   13 060 |                 3 284 045 |               3 319 266 |               2 382 560 |          7 806 401 |
+| read FlatBuffers  |                8 197 200 |                 8 878 415 |               9 118 250 |               8 075 720 |          9 920 634 |
 
 ## With byte lists
 
-| Operation         | Dart (official FB v0.12) | Dart (official FB master) | Dart (ObjectBox FB) | Go                 |
-|-------------------|-------------------------:|--------------------------:|--------------------:|-------------------:|
-| write FlatBuffers |                   12 178 |                 2 592 991 |           2 641 273 |          7 032 348 |
-| read FlatBuffers  |                3 831 742 |                 4 032 722 |           4 905 760 |          8 438 818 |
+| Operation         | Dart (official FB v0.12) | Dart (official FB master) | Dart JIT (ObjectBox FB) | Dart AOT (ObjectBox FB) |                Go  |
+|-------------------|-------------------------:|--------------------------:|------------------------:|------------------------:|-------------------:|
+| write FlatBuffers |                   12 178 |                 2 592 991 |               2 641 273 |               1 873 302 |          7 032 348 |
+| read FlatBuffers  |                3 831 742 |                 4 032 722 |               4 905 760 |               4 989 832 |          8 438 818 |
 
 ## Dart
 
@@ -36,7 +36,7 @@ The reported result is the average of the runtimes.
 
 ```shell
 # v0.12
-$ pub run benchmark/flatbuffers_official.dart 
+$ pub run benchmark/flatbuffers_official.dart
 Measuring performance without byte list
 Builder(RunTime): 765.6720244929201 us.
 Reader(RunTime): 1.2199287561606402 us.
@@ -45,7 +45,7 @@ Builder(RunTime): 821.0898645876077 us.
 Reader(RunTime): 2.6097788216872186 us.
 
 # master
-$ pub run benchmark/flatbuffers_official.dart 
+$ pub run benchmark/flatbuffers_official.dart
 Measuring performance without byte list
 Builder(RunTime): 3.0450252660971455 us.
 Reader(RunTime): 1.1263271653780544 us.
@@ -53,13 +53,22 @@ Measuring performance with byte list
 Builder(RunTime): 3.856550051195625 us.
 Reader(RunTime): 2.4797140891084815 us.
 
-$ pub run benchmark/flatbuffers_objectbox.dart 
+$ pub run benchmark/flatbuffers_objectbox.dart
 Measuring performance without byte list
 Builder(RunTime): 3.0127136388422757 us.
 Reader(RunTime): 1.096701669728292 us.
 Measuring performance with byte list
 Builder(RunTime): 3.7860521907033533 us.
 Reader(RunTime): 2.038420103694327 us.
+
+$ dart2native benchmark/flatbuffers_objectbox.dart --output bench && ./bench
+Generated: /flatbuffers_benchmark/flatbuffers_dart_benchmark/bench
+Measuring performance without byte list
+Builder(RunTime): 4.197166073467195 us.
+Reader(RunTime): 1.2382796828022764 us.
+Measuring performance with byte list
+Builder(RunTime): 5.3381670363341795 us.
+Reader(RunTime): 2.004075285054516 us.
 ```
 
 ## Go
