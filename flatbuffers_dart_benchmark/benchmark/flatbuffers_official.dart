@@ -65,7 +65,7 @@ class BuilderBench extends BenchmarkBase {
   @override
   void setup() {}
 
-  // Not measures teardown code executed after the benchark runs.
+  // Not measures teardown code executed after the benchmark runs.
   @override
   void teardown() {}
 }
@@ -122,7 +122,7 @@ class ReaderBench extends BenchmarkBase {
     data = writeData(builder);
   }
 
-  // Not measures teardown code executed after the benchark runs.
+  // Not measures teardown code executed after the benchmark runs.
   @override
   void teardown() {}
 

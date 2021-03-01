@@ -1,14 +1,13 @@
-# Flatbuffers performance comparison
+# FlatBuffers performance comparison
 
-Note: Reading a list from flatbuffers in Dart requires a copy, resulting in quite a poor performance,
-so we measure a separate run with and without doing so.
-To be fair/have the numbers for comparison, we do the same in Go, though it doesn't have such a big impact there.
+This repository comes with benchmarking code for different FlatBuffer implementations across programing languages.
 
 ## Setup
 
 * Measured performance is in "operations per second".
 * Benchmarks are CPU bound (no disk operations).
 * Executed on a laptop CPU: Intel Core i7-8850H
+* Dart uses JIT unless AOT is indicated.
 
 ### Versions
 
@@ -19,24 +18,29 @@ To be fair/have the numbers for comparison, we do the same in Go, though it does
 * Go version go1.15.8
 * Go flatbuffers v1.12.0
 
-## Without byte lists
+## Results without byte lists
 
-| Operation         | Dart (official FB v0.12) | Dart (official FB master) | Dart JIT (ObjectBox FB) | Dart AOT (ObjectBox FB) |                Go  |
-|-------------------|-------------------------:|--------------------------:|------------------------:|------------------------:|-------------------:|
-| write FlatBuffers |                   13 060 |                 3 284 045 |               3 319 266 |               2 382 560 |          7 806 401 |
-| read FlatBuffers  |                8 197 200 |                 8 878 415 |               9 118 250 |               8 075 720 |          9 920 634 |
+| Operation         | Dart (official FB v0.12) | Dart (official FB master) | Dart (ObjectBox FB) | Dart AOT (ObjectBox FB) |        Go  |
+|-------------------|-------------------------:|--------------------------:|--------------------:|------------------------:|-----------:|
+| write FlatBuffers |                   13 060 |                 3 284 045 |           3 319 266 |               2 382 560 |  7 806 401 |
+| read FlatBuffers  |                8 197 200 |                 8 878 415 |           9 118 250 |               8 075 720 |  9 920 634 |
 
-## With byte lists
+## Results with byte lists
 
-| Operation         | Dart (official FB v0.12) | Dart (official FB master) | Dart JIT (ObjectBox FB) | Dart AOT (ObjectBox FB) |                Go  |
-|-------------------|-------------------------:|--------------------------:|------------------------:|------------------------:|-------------------:|
-| write FlatBuffers |                   12 178 |                 2 592 991 |               2 641 273 |               1 873 302 |          7 032 348 |
-| read FlatBuffers  |                3 831 742 |                 4 032 722 |               4 905 760 |               4 989 832 |          8 438 818 |
+Note: when reading a list from FlatBuffers in Dart, we call toList() to complete detach from the buffer (do not reference data inside the buffer).
+To be fair/have the numbers for comparison, we do the same in Go, though it doesn't have such a big impact there.
 
-## Dart
+| Operation         | Dart (official FB v0.12) | Dart (official FB master) | Dart (ObjectBox FB) | Dart AOT (ObjectBox FB) |         Go  |
+|-------------------|-------------------------:|--------------------------:|--------------------:|------------------------:|------------:|
+| write FlatBuffers |                   12 178 |                 2 592 991 |           2 641 273 |               1 873 302 |   7 032 348 |
+| read FlatBuffers  |                3 831 742 |                 4 032 722 |           4 905 760 |               4 989 832 |   8 438 818 |
+
+## Dart plain results
 
 The benchmark_harness executes a 10-call timing loop repeatedly until 2 seconds have elapsed.
 The reported result is the average of the runtimes.
+
+### Dart JIT
 
 ```shell
 # v0.12
@@ -64,7 +68,13 @@ Reader(RunTime): 1.096701669728292 us.
 Measuring performance with byte list
 Builder(RunTime): 3.7860521907033533 us.
 Reader(RunTime): 2.038420103694327 us.
+```
 
+### Dart AOT
+
+We measured only the fastest variant (ObjectBox fork):
+
+```shell
 $ dart2native benchmark/flatbuffers_objectbox.dart --output bench && ./bench
 Generated: /flatbuffers_benchmark/flatbuffers_dart_benchmark/bench
 Measuring performance without byte list
@@ -75,7 +85,7 @@ Builder(RunTime): 5.3381670363341795 us.
 Reader(RunTime): 2.004075285054516 us.
 ```
 
-## Go
+## Go plain results
 
 To get (closer) to what Dart does: execute 10 iterations of the same operation for each measured loop.
 
