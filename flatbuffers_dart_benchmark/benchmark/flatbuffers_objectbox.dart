@@ -41,7 +41,7 @@ Uint8List writeData(fb.Builder builder) {
   final strOffset = builder.writeString(source.string);
   int bytesOffset;
   if (withBytesList) bytesOffset = builder.writeListInt8(source.bytes);
-  builder.startTable();
+  builder.startTable(4);
   builder.addInt64(0, source.number);
   builder.addFloat64(1, source.float);
   builder.addOffset(2, strOffset);
