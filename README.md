@@ -8,8 +8,24 @@ This repository comes with benchmarking code for different FlatBuffer implementa
 * Benchmarks are CPU bound (no disk operations).
 * Executed on a laptop CPU: Intel Core i7-8850H
 * Dart uses JIT unless AOT is indicated.
+* Dart benchmark_harness executes a 10-call timing loop repeatedly until 2 seconds have elapsed.
+  The reported result is the average of the runtimes.
 
-### Versions
+## Results 
+
+|     Date   | Variant                         |       Read |      Write |  Read (w.bytes) | Write (w.bytes) |
+|:----------:|---------------------------------|-----------:|-----------:|----------------:|----------------:|
+| 2021-02-26 | Dart official FB v0.12          |  8 197 200 |     13 060 |       3 831 742 |          12 178 |
+| 2021-02-26 | Dart official FB master         |  8 878 415 |  3 284 045 |       4 032 722 |       2 592 991 |
+| 2021-02-26 | Dart ObjectBox v0.12 FB         |  9 074 660 |  5 044 802 |       4 732 340 |       4 212 460 |
+| 2021-02-26 | Dart AOT ObjectBox v0.12 FB     |  8 149 270 |  3 821 181 |       5 020 220 |       3 189 186 |
+| 2021-02-26 | Go                              |  9 920 634 |  7 806 401 |       8 438 818 |       7 032 348 |
+
+Note about results with a byte list: when reading a list from FlatBuffers in Dart, we call toList() to complete detach 
+from the buffer (do not reference data inside the buffer). To be fair/have the numbers for comparison, we do the same in
+Go, though it doesn't have such a big impact there.
+
+### Benchmarked on 2021-02-26
 
 * Dart SDK v2.10.5 (FlatBuffers)
 * Dart SDK v2.12.0 (ObjectBox FlatBuffers)
@@ -19,29 +35,7 @@ This repository comes with benchmarking code for different FlatBuffer implementa
 * Go version go1.15.8
 * Go flatbuffers v1.12.0
 
-## Results without byte lists
-
-| Operation         | Dart (official FB v0.12) | Dart (official FB master) | Dart (ObjectBox FB) | Dart AOT (ObjectBox FB) |        Go  |
-|-------------------|-------------------------:|--------------------------:|--------------------:|------------------------:|-----------:|
-| write FlatBuffers |                   13 060 |                 3 284 045 |           5 044 802 |               3 821 181 |  7 806 401 |
-| read FlatBuffers  |                8 197 200 |                 8 878 415 |           9 074 660 |               8 149 270 |  9 920 634 |
-
-## Results with byte lists
-
-Note: when reading a list from FlatBuffers in Dart, we call toList() to complete detach from the buffer (do not reference data inside the buffer).
-To be fair/have the numbers for comparison, we do the same in Go, though it doesn't have such a big impact there.
-
-| Operation         | Dart (official FB v0.12) | Dart (official FB master) | Dart (ObjectBox FB) | Dart AOT (ObjectBox FB) |        Go  |
-|-------------------|-------------------------:|--------------------------:|--------------------:|------------------------:|-----------:|
-| write FlatBuffers |                   12 178 |                 2 592 991 |           4 212 460 |               3 189 186 |  7 032 348 |
-| read FlatBuffers  |                3 831 742 |                 4 032 722 |           4 732 340 |               5 020 220 |  8 438 818 |
-
-## Dart plain results
-
-The benchmark_harness executes a 10-call timing loop repeatedly until 2 seconds have elapsed.
-The reported result is the average of the runtimes.
-
-### Dart JIT
+#### Dart JIT
 
 ```shell
 # v0.12
@@ -71,7 +65,7 @@ Builder(RunTime): 2.3739097819326473 us.
 Reader(RunTime): 2.113119513813462 us.
 ```
 
-### Dart AOT
+#### Dart AOT
 
 We measured only the fastest variant (ObjectBox fork):
 
@@ -86,7 +80,7 @@ Builder(RunTime): 3.1355955587468918 us.
 Reader(RunTime): 1.9919445761341137 us.
 ```
 
-## Go plain results
+#### Go plain results
 
 To get (closer) to what Dart does: execute 10 iterations of the same operation for each measured loop.
 
