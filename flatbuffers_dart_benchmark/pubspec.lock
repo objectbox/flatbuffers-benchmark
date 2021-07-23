@@ -103,8 +103,8 @@ packages:
     dependency: "direct main"
     description:
       path: dart
-      ref: c0ba2870c909fb57f97efd7083b5d33d2311d7f9
-      resolved-ref: c0ba2870c909fb57f97efd7083b5d33d2311d7f9
+      ref: "12e341e4f8abe27171b54023796d49c7e1f35cfc"
+      resolved-ref: "12e341e4f8abe27171b54023796d49c7e1f35cfc"
       url: "https://github.com/google/flatbuffers"
     source: git
     version: "2.0.0"

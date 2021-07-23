@@ -33,19 +33,20 @@ class POD {
 final source = POD(1, 4.2, 'Foo', [1, 2, 3, 4, 5, 6]);
 
 Uint8List writeData(fb.Builder builder) {
-  final strOffset = builder.writeString(source.string);
+  final strOffset = builder.writeString(source.string, asciiOptimization: true);
   var bytesOffset = 0;
   if (withBytesList) bytesOffset = builder.writeListInt8(source.bytes!);
-  builder.startTable();
+  builder.startTable(withBytesList ? 4 : 3);
   builder.addInt64(0, source.number);
   builder.addFloat64(1, source.float);
   builder.addOffset(2, strOffset);
   if (withBytesList) builder.addOffset(3, bytesOffset);
-  return builder.finish(builder.endTable());
+  builder.finish(builder.endTable());
+  return builder.buffer;
 }
 
 class BuilderBench extends BenchmarkBase {
-  final builder = fb.Builder(initialSize: 256);
+  final builder = fb.Builder(initialSize: 256, deduplicateTables: false);
 
   BuilderBench() : super('Builder');
 
