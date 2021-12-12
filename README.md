@@ -9,12 +9,13 @@ This repository comes with benchmarking code for different FlatBuffer implementa
 * Dart uses JIT unless AOT is indicated.
 * Dart benchmark_harness executes a 10-call timing loop repeatedly until 2 seconds have elapsed.
   The reported result is the average of the runtimes.
-* Measured performance is in "operations per second": (10 * 1e6 / timeUs)  
+* Measured performance is in "operations per second": (10 * 1e6 / timeUs)
 
 ## Results (more is better)
 
 |     Date   | Variant                         |       Read |      Write |  Read (w.bytes) | Write (w.bytes) |
 |:----------:|---------------------------------|-----------:|-----------:|----------------:|----------------:|
+| 2021-12-12 | Dart official FB v2.0.5         | 11 636 660 |  7 907 070 |       9 185 325 |       6 176 130 |
 | 2021-07-06 | Dart official FB master         |  8 470 985 |  4 063 437 |       4 029 197 |       3 036 950 |
 | 2021-07-06 | Dart ObjectBox v1.1 FB          | 11 296 765 |  8 904 645 |       5 989 820 |       6 517 266 |
 | 2021-02-26 | Dart official FB v0.12          |  8 197 200 |     13 060 |       3 831 742 |          12 178 |
@@ -23,9 +24,24 @@ This repository comes with benchmarking code for different FlatBuffer implementa
 | 2021-02-26 | Dart AOT ObjectBox v0.12 FB     |  8 149 270 |  3 821 181 |       5 020 220 |       3 189 186 |
 | 2021-02-26 | Go                              |  9 920 634 |  7 806 401 |       8 438 818 |       7 032 348 |
 
-Note about results with a byte list: when reading a list from FlatBuffers in Dart, we call toList() to complete detach 
+Note about results with a byte list: when reading a list from FlatBuffers in Dart, we call toList() to complete detach
 from the buffer (do not reference data inside the buffer). To be fair/have the numbers for comparison, we do the same in
 Go, though it doesn't have such a big impact there.
+
+### Benchmarked on 2021-12-12
+
+* Dart SDK v2.13.4
+* Dart flat_buffers v2.0.5
+
+```shell
+$ dart run ./benchmark/flatbuffers_official.dart
+Measuring performance without byte list
+Builder(RunTime): 1.264690966438896 us.
+Reader(RunTime): 0.8593531133503943 us.
+Measuring performance with byte list
+Builder(RunTime): 1.6191369028825495 us.
+Reader(RunTime): 1.0886931055787357 us.
+```
 
 ### Benchmarked on 2021-07-06
 
@@ -34,12 +50,13 @@ Go, though it doesn't have such a big impact there.
 * Dart flat_buffers master (as of 2012-07-06)
 * Null safety enabled (no noticable performance improvement for this change alone)
 
-Notes: 
+Notes:
+
 * read speed up by about 10 % was done by improving the benchmark to use `const` constructors of FB readers.
 * both upstream master and ObjectBox FlatBuffers are now null-safe.
 
 ```shell
-$ dart run ./benchmark/flatbuffers_official.dart 
+$ dart run ./benchmark/flatbuffers_official.dart
 Measuring performance without byte list
 Builder(RunTime): 2.4609702616502274 us.
 Reader(RunTime): 1.1805002605954324 us.
@@ -47,7 +64,7 @@ Measuring performance with byte list
 Builder(RunTime): 3.2927768109833697 us.
 Reader(RunTime): 2.481883500446739 us.
 
-$ dart run ./benchmark/flatbuffers_objectbox.dart 
+$ dart run ./benchmark/flatbuffers_objectbox.dart
 Measuring performance without byte list
 Builder(RunTime): 1.123009326587794 us.
 Reader(RunTime): 0.8852091727144895 us.

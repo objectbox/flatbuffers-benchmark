@@ -106,9 +106,8 @@ class ReaderBench extends BenchmarkBase {
         const fb.Float64Reader().vTableGet(buffer, rootOffset, field(1), 0),
         const fb.StringReader().vTableGet(buffer, rootOffset, field(2), ''),
         withBytesList
-            ? const fb.ListReader<int>(fb.Int8Reader())
+            ? const fb.Int8ListReader(lazy: false)
                 .vTableGetNullable(buffer, rootOffset, field(3))
-                ?.toList()
             : null);
   }
 
