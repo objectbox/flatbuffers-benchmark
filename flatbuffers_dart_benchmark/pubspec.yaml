@@ -9,11 +9,7 @@ environment:
 dependencies:
   benchmark_harness: any
   # latest flatbuffers from git has performance-improving patches
-  flat_buffers:
-    git:
-      url: https://github.com/google/flatbuffers
-      ref: 12e341e4f8abe27171b54023796d49c7e1f35cfc
-      path: dart
+  flat_buffers: 2.0.5
   objectbox: 1.1.0
 
 dev_dependencies:
